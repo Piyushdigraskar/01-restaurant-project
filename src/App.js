@@ -20,6 +20,7 @@ function App() {
       <Header onShowCart={showCartHandler} ></Header>
       <main>
         <Meals></Meals>
+        
       </main>
     </CartProvider>
   );
