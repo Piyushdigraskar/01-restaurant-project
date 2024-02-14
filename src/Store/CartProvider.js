@@ -6,6 +6,28 @@ const CartProvider = (props) => {
     const [items, setItems] = useState([]);
     const [totalAmount, setTotalAmount] = useState(0);
 
+
+    const addItemToCartHandler = (item) => {
+        setItems((prevItems) => {
+            const existingItemIndex = prevItems.findIndex((prevItem) => prevItem.id === item.id);
+            const updatedItems = [...prevItems];
+    
+            if (existingItemIndex !== -1) {
+                // If the item already exists in the cart, increase its quantity
+                updatedItems[existingItemIndex].amount += item.amount;
+            } else {
+                // If the item is new, add it to the cart
+                updatedItems.push({ ...item });
+            }
+    
+            return updatedItems;
+        });
+    
+        setTotalAmount((prevTotalAmount) => {
+            return prevTotalAmount + item.price * item.amount;
+        });
+    };
+    
     const removeItemFromCartHandler = (id)=>{
         setItems((prevItems)=>{
             const existingItemIndex = prevItems.findIndex((prevItem) => prevItem.id === id);
@@ -37,43 +59,28 @@ const CartProvider = (props) => {
         });
 
     }
-    
-
-    const addItemToCartHandler = (item)=>{
-        setItems((prevItems)=>{
-            const existingItemsIndex = prevItems.findIndex((prevItem) => prevItem.id === item.id);
-            const updatedItems = [...prevItems];
-
-            if(existingItemsIndex !== -1){
-                updatedItems[existingItemsIndex].amount += item.amount;
-            }
-            else{
-                updatedItems.push(item);
-            }
-            return updatedItems;
-        })
-        setTotalAmount((prevTotalAmount) => {
-            // Find the added item from the items array
-            const addedItem = items.find((cartItem) => cartItem.id === item.id);
-    
-            // Calculate the price of the added item based on its amount
-            if(addedItem){
-                const addedItemPrice = addedItem.price * addedItem.amount;
-                return prevTotalAmount + addedItemPrice;
-            }
-            else{
-                return prevTotalAmount;
-            }
-    
-            // Return the previous total amount plus the price of the added item
-            
+    const reduceItemQuantityHandler = (id) => {
+        setItems((prevItems) => {
+            return prevItems.map((item) => {
+                if (item.id === id && item.amount > 1) {
+                    // If the item ID matches and the quantity is greater than 1, reduce the quantity
+                    return { ...item, amount: item.amount - 1 };
+                }
+                return item;
+            });
         });
     };
+    
+    
+    
+    
+    
     const cartContext = {
         items:items,
         totalAmount:totalAmount,
         addItem: addItemToCartHandler,
-        removeItem:removeItemFromCartHandler
+        removeItem:removeItemFromCartHandler,
+        removeQuantity:reduceItemQuantityHandler,
     } 
 
     
