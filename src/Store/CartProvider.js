@@ -14,7 +14,7 @@ const CartProvider = (props) => {
     
             if (existingItemIndex !== -1) {
                 // If the item already exists in the cart, increase its quantity
-                updatedItems[existingItemIndex].amount += item.amount;
+                updatedItems[existingItemIndex].amount += 1;
             } else {
                 // If the item is new, add it to the cart
                 updatedItems.push({ ...item });
@@ -24,7 +24,12 @@ const CartProvider = (props) => {
         });
     
         setTotalAmount((prevTotalAmount) => {
-            return prevTotalAmount + item.price * item.amount;
+
+            const addedItem = items.find((prevItem) => prevItem.id === item.id);
+            if(!addedItem){
+                return prevTotalAmount + item.price*item.amount;
+            }
+            return prevTotalAmount + item.price;
         });
     };
     
@@ -61,15 +66,40 @@ const CartProvider = (props) => {
     }
     const reduceItemQuantityHandler = (id) => {
         setItems((prevItems) => {
-            return prevItems.map((item) => {
-                if (item.id === id && item.amount > 1) {
-                    // If the item ID matches and the quantity is greater than 1, reduce the quantity
+            // Map through the items and reduce the quantity of the item with the given id
+            const updatedItems = prevItems.map((item) => {
+                if (item.id === id) {
+                    // If the item ID matches, reduce the quantity
                     return { ...item, amount: item.amount - 1 };
                 }
                 return item;
-            });
+            }).filter(item => item.amount > 0); // Filter out items with quantity zero
+    
+            return updatedItems;
+        });
+    
+        setTotalAmount((prevTotalAmount) => {
+            // Find the item whose quantity is reduced
+            const reducedItem = items.find((item) => item.id === id);
+    
+            // If the reduced item is found
+            if (reducedItem) {
+                // Calculate the reduction in price based on the reduced quantity
+                const reducedItemPrice = reducedItem.price;
+    
+                // Subtract the reduced price from the total amount
+                const newTotalAmount = prevTotalAmount - reducedItemPrice;
+    
+                // Ensure total amount doesn't go below zero
+                return Math.max(0, newTotalAmount);
+            }
+    
+            // If the reduced item is not found, return the original total amount
+            return prevTotalAmount;
         });
     };
+    
+    
     
     
     
